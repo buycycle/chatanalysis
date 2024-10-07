@@ -7,7 +7,7 @@ Chat Analysis is a tool that processes Sendbird chat logs within a specified tim
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/chat-analysis.git
+   git clone git@github.com:buycycle/chatanalysis.git
    ```
 2. Navigate to the project directory:
    ```bash
