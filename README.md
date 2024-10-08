@@ -1,9 +1,6 @@
 # Chat Analysis
-Chat Analysis is a tool that processes Sendbird chat logs within a specified timeframe and batch queries ChatGPT with a predefined prompt. The output is a JSON file containing the responses from ChatGPT.
-## Features
-- Extracts chat logs from Sendbird within a defined timeframe.
-- Batch processes conversations and queries ChatGPT.
-- Outputs responses in a structured JSON format.
+Chat Analysis is a tool that processes Sendbird chat logs within a specified timeframe and batch queries ChatGPT with a predefined prompt. The conversations are split up by a user defined maximal character length to stay in the context limit. The output are two files, the conversations and responses log files.
+
 ## Installation
 1. Clone the repository:
    ```bash
@@ -22,7 +19,7 @@ Chat Analysis is a tool that processes Sendbird chat logs within a specified tim
 2. Define the timeframe for analysis.
 3. Run the script to process the logs and query ChatGPT:
    ```bash
-   python main.py --start-date YYYY-MM-DD --end-date YYYY-MM-DD
+   python main.py --start-date YYYY-MM-DD --end-date YYYY-MM-DD --char-limit int
    ```
 # example for the last 2 days and a sensible chatGPT limit of 140000 characters
    ```bash
