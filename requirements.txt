@@ -2,5 +2,4 @@
 git+https://gitlab.com/rauner/buycycle.git@main#egg=buycycle
 
 openai
-boto3
 pymysql
