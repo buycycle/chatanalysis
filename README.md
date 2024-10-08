@@ -24,7 +24,11 @@ Chat Analysis is a tool that processes Sendbird chat logs within a specified tim
    ```bash
    python main.py --start-date YYYY-MM-DD --end-date YYYY-MM-DD
    ```
-4. The output JSON file with ChatGPT responses will be saved in the specified directory.
+# example for the last 2 days and a sensible chatGPT limit of 140000 characters
+   ```bash
+   python main.py --start-date $(date -d "2 days ago" +%Y-%m-%d) --end-date $(date +%Y-%m-%d) --char-limit 140000
+   ```
+4. The conversations will be saved in conversionts and the responses in responses log files.
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
 ## License
