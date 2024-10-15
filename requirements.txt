@@ -1,3 +1,4 @@
+numpy
 # common ML functions and logging
 git+https://gitlab.com/rauner/buycycle.git@main#egg=buycycle
 
