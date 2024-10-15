@@ -15,9 +15,9 @@ openai.api_key = config.get("openai", "api_key")
 model = config.get("openai", "model")
 
 
-def get_chat_logs(start_date, end_date):
-    # Modify the query to include date filtering
-    query = f"""
+def build_query(start_date, end_date):
+    """Build the SQL query for fetching chat logs."""
+    return f"""
     SELECT
         conversation_id,
         JSON_ARRAYAGG(
@@ -64,6 +64,9 @@ def get_chat_logs(start_date, end_date):
     HAVING total_character_count >= 20
     ORDER BY created_at DESC
     """
+def get_chat_logs(start_date, end_date):
+    """Fetch chat logs from the database."""
+    query = build_query(start_date, end_date)
     df = sql_db_read(
         query=query,
         DB="DB_LOG",
