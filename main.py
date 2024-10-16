@@ -18,51 +18,53 @@ model = config.get("openai", "model")
 def build_query(start_date, end_date):
     """Build the SQL query for fetching chat logs."""
     return f"""
-    SELECT
-        conversation_id,
-        JSON_ARRAYAGG(
-            JSON_OBJECT(
-                'sent_by', ordered_data.sent_by,
-                'user_type',
-                    CASE
-                        WHEN ordered_data.sent_by = ordered_data.buyer_id THEN 'buyer'
-                        WHEN ordered_data.sent_by = ordered_data.seller_id THEN 'seller'
-                    END,
-                'message_type', ordered_data.message_type,
-                'message_en',
-                    CASE
-                        WHEN ordered_data.message_type = 'message' THEN ordered_data.message_en
-                        ELSE NULL
-                    END,
-                'character_count',
-                    CASE
-                        WHEN ordered_data.message_type = 'message' THEN CHAR_LENGTH(ordered_data.message_en)
-                        ELSE NULL
-                    END,
-                'offer',
-                    CASE
-                        WHEN ordered_data.message_type != 'message' AND ordered_data.sent_by = ordered_data.seller_id THEN ordered_data.current_seller_offer
-                        WHEN ordered_data.message_type != 'message' AND ordered_data.sent_by = ordered_data.buyer_id THEN ordered_data.current_buyer_offer
-                        ELSE NULL
-                    END,
-                'sent_at', ordered_data.created_at
-            )
-        ) AS conversation_data,
-        COUNT(*) AS message_count,
-        SUM(
-            CASE
-                WHEN ordered_data.message_type = 'message' THEN CHAR_LENGTH(ordered_data.message_en)
-                ELSE 0
-            END
-        ) AS total_character_count
-    FROM (
-        SELECT * FROM sendbird_message_logs
-        WHERE created_at BETWEEN '{start_date}' AND '{end_date}'
-        ORDER BY conversation_id, created_at ASC
-    ) AS ordered_data
-    GROUP BY conversation_id
-    HAVING total_character_count >= 20
-    ORDER BY created_at DESC
+SELECT
+    conversation_id,
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'sent_by', ordered_data.sent_by,
+            'user_type',
+                CASE
+                    WHEN ordered_data.sent_by = ordered_data.buyer_id THEN 'buyer'
+                    WHEN ordered_data.sent_by = ordered_data.seller_id THEN 'seller'
+                END,
+            'message_type', ordered_data.message_type,
+            'message_en',
+                CASE
+                    WHEN ordered_data.message_type = 'message' THEN ordered_data.message_en
+                    WHEN ordered_data.message_type = 'offer' AND ordered_data.sent_by = ordered_data.seller_id THEN CONCAT('offer seller: ', ordered_data.current_seller_offer)
+                    WHEN ordered_data.message_type = 'offer' AND ordered_data.sent_by = ordered_data.buyer_id THEN CONCAT('offer buyer: ', ordered_data.current_buyer_offer)
+                    ELSE NULL
+                END,
+            'character_count',
+                CASE
+                    WHEN ordered_data.message_type = 'message' THEN CHAR_LENGTH(ordered_data.message_en)
+                    ELSE NULL
+                END,
+            'offer',
+                CASE
+                    WHEN ordered_data.message_type != 'message' AND ordered_data.sent_by = ordered_data.seller_id THEN ordered_data.current_seller_offer
+                    WHEN ordered_data.message_type != 'message' AND ordered_data.sent_by = ordered_data.buyer_id THEN ordered_data.current_buyer_offer
+                    ELSE NULL
+                END,
+            'sent_at', ordered_data.created_at
+        )
+    ) AS conversation_data,
+    COUNT(*) AS message_count,
+    SUM(
+        CASE
+            WHEN ordered_data.message_type = 'message' THEN CHAR_LENGTH(ordered_data.message_en)
+            ELSE 0
+        END
+    ) AS total_character_count
+FROM (
+    SELECT * FROM sendbird_message_logs
+    WHERE created_at BETWEEN '{start_date}' AND '{end_date}'
+    ORDER BY conversation_id, created_at ASC
+) AS ordered_data
+GROUP BY conversation_id
+HAVING total_character_count >= 50
+ORDER BY created_at DESC
     """
 def get_chat_logs(start_date, end_date):
     """Fetch chat logs from the database."""
@@ -106,6 +108,7 @@ def main(start_date, end_date, char_limit):
         response_log_filename, "w"
     ) as resp_log_file:
         conv_log_file.write(f"Total conversations: {total_conversations}\n\n")
+        resp_log_file.write(f"prompt: {prompt}\n\n")
         resp_log_file.write(f"Total conversations: {total_conversations}\n\n")
         current_bundle = []
         current_char_count = 0
