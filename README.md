@@ -48,15 +48,17 @@ Chat Analysis is a tool that processes Sendbird chat logs within a specified tim
 ## Usage
 1. Ensure your Sendbird chat logs are accessible.
 2. Define the timeframe for analysis.
+3. Define a prompt in the prompt.txt.
+4. Define a summary prompt in prmpt_summary.txt
 3. Run the script to process the logs and query ChatGPT:
    ```bash
    python main.py --start-date YYYY-MM-DD --end-date YYYY-MM-DD --char-limit int
    ```
-   Example for the last 2 days and a sensible ChatGPT limit of 140,000 characters:
+   Example for the a specific week and a sensible ChatGPT limit of 140,000 characters:
    ```bash
-   python main.py --start-date $(date -d "2 days ago" +%Y-%m-%d) --end-date $(date +%Y-%m-%d) --char-limit 140000
+   python main.py --start-date 2024-10-21 --end-date 2024-10-27 --char-limit 140000
    ```
-4. The conversations will be saved in conversations and the responses in responses log files.
+4. The conversations will be saved in conversations, the responses in responses, and the summary in the summary log files.
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
 ## License
