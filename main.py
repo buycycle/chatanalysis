@@ -6,15 +6,12 @@ from buycycle.data import sql_db_read
 import openai
 import json
 from datetime import datetime
-
 # Read configuration
 config = configparser.ConfigParser()
 config.read("config/config.ini")
 # Set your OpenAI API key from the config file
 openai.api_key = config.get("openai", "api_key")
 model = config.get("openai", "model")
-
-
 def build_query(start_date, end_date):
     """Build the SQL query for fetching chat logs."""
     return f"""
@@ -76,8 +73,6 @@ def get_chat_logs(start_date, end_date):
         index_col="conversation_id",
     )
     return df
-
-
 def send_conversation_to_chatgpt(conversation, prompt):
     input_text = f"{prompt}\n\n{conversation}"
     try:
@@ -93,17 +88,33 @@ def send_conversation_to_chatgpt(conversation, prompt):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
-
-
+def send_summary_request_to_chatgpt(responses, prompt):
+    input_text = f"{prompt}\n\n{responses}"
+    try:
+        response = openai.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": input_text},
+            ],
+        )
+        summary = response.choices[0].message.content
+        return summary
+    except Exception as e:
+        print(f"An error occurred while summarizing: {e}")
+        return None
 def main(start_date, end_date, char_limit):
     with open("prompt.txt", "r") as file:
         prompt = file.read().strip()
+    with open("prompt_summary.txt", "r") as file:
+        prompt_summary = file.read().strip()
     df = get_chat_logs(start_date, end_date)
     total_conversations = len(df)
     print(f"Total conversations to process: {total_conversations}")
-    # Create log files for conversations and responses
+    # Create log files for conversations, responses, and summary
     conversation_log_filename = f"conversations_{start_date}_to_{end_date}.log"
     response_log_filename = f"responses_{start_date}_to_{end_date}.log"
+    summary_log_filename = f"summary_{start_date}_to_{end_date}.log"
     with open(conversation_log_filename, "w") as conv_log_file, open(
         response_log_filename, "w"
     ) as resp_log_file:
@@ -112,6 +123,7 @@ def main(start_date, end_date, char_limit):
         resp_log_file.write(f"Total conversations: {total_conversations}\n\n")
         current_bundle = []
         current_char_count = 0
+        all_responses = []
         # Check if df is a DataFrame
         if isinstance(df, pd.DataFrame):
             for i, row in df.iterrows():
@@ -141,6 +153,7 @@ def main(start_date, end_date, char_limit):
                             resp_log_file.write(
                                 f"Response for bundled conversations:\n{response}\n\n"
                             )
+                            all_responses.append(response)
                     # Reset the bundle and add the current conversation
                     current_bundle = [conversation_text]
                     current_char_count = row["total_character_count"]
@@ -158,8 +171,18 @@ def main(start_date, end_date, char_limit):
                 resp_log_file.write(
                     f"Response for final bundled conversations:\n{response}\n\n"
                 )
-
-
+                all_responses.append(response)
+        # Send all responses to ChatGPT for summarization
+        if all_responses:
+            responses_text = "\n\n".join(all_responses)
+            print("Sending responses to ChatGPT for summarization...")
+            summary = send_summary_request_to_chatgpt(responses_text, prompt_summary)
+            if summary:
+                print(f"Summary:\n{summary}\n")
+                with open(summary_log_filename, "w") as summary_file:
+                    summary_file.write(f"prompt_summary: {prompt_summary}\n\n")
+                    summary_file.write(f"Total responses: {len(all_responses)}\n\n")
+                    summary_file.write(summary)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Process chat logs within a date range."
@@ -188,3 +211,4 @@ if __name__ == "__main__":
         print(f"Invalid date format: {e}")
         exit(1)
     main(start_date, end_date, args.char_limit)
+
