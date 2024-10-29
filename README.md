@@ -1,5 +1,5 @@
 # Chat Analysis
-Chat Analysis is a tool that processes Sendbird chat logs within a specified timeframe and batch queries ChatGPT with a predefined prompt. The conversations are split up by a user-defined maximal character length to stay within the context limit. The output consists of two files: the conversations and responses log files.
+Chat Analysis is a tool that processes Sendbird chat logs within a specified timeframe and batch queries ChatGPT with a predefined prompt. The conversations are split by a user-defined maximum character length to stay within the context limit. The batch responses can be summarized with the `prompt_summary`. The output consists of the conversations, responses, and summary log files.
 ## Installation
 1. **Install Git** (if not already installed):
    - **Windows**: Download the Git installer from the [official Git website](https://git-scm.com/download/win) and run the installer.
@@ -18,7 +18,7 @@ Chat Analysis is a tool that processes Sendbird chat logs within a specified tim
    ```
 3. **Navigate to the project directory**:
    ```bash
-   cd chat-analysis
+   cd chatanalysis
    ```
 4. **Ensure you have Python 3.11 installed**. You can check your Python version with:
    ```bash
@@ -48,18 +48,20 @@ Chat Analysis is a tool that processes Sendbird chat logs within a specified tim
 ## Usage
 1. Ensure your Sendbird chat logs are accessible.
 2. Define the timeframe for analysis.
-3. Define a prompt in the prompt.txt.
-4. Define a summary prompt in prmpt_summary.txt
-3. Run the script to process the logs and query ChatGPT:
+3. Define a prompt in `prompt.txt`.
+4. Define a summary prompt in `prompt_summary.txt`.
+5. Run the script to the logs and query ChatGPT:
    ```bash
    python main.py --start-date YYYY-MM-DD --end-date YYYY-MM-DD --char-limit int
    ```
-   Example for the a specific week and a sensible ChatGPT limit of 140,000 characters:
+   Example for a specific week and a sensible ChatGPT limit of 140,000 characters:
    ```bash
    python main.py --start-date 2024-10-21 --end-date 2024-10-27 --char-limit 140000
    ```
-4. The conversations will be saved in conversations, the responses in responses, and the summary in the summary log files.
+6. The conversations will be saved in `conversations`, the responses in `responses`, and the summary in the `summary` log files.
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
 ## License
 This project is licensed under the MIT License.
+
+
